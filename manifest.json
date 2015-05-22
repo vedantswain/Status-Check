@@ -1,0 +1,28 @@
+{
+  "name": "Status Check",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Reviews your Facebook status.",
+  
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup/popup.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["http://*.facebook.com/*","https://*.facebook.com/*"],
+      "css": ["content/inject/inject.css"],
+      "js": ["content/inject/inject.js"]
+    }
+ ],
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "permissions": [
+      "tabs","http://*.facebook.com/*","https://*.facebook.com/*"
+    ],
+ 
+   "web_accessible_resources": ["popup.js", "fbScript.js"]
+}
