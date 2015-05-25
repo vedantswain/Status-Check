@@ -70,6 +70,7 @@ function interceptPost(e){
 	timer_flag=1;
 	checked_flag=1;
 	post_btn.innerHTML="Post Now";
+	fetchTweets();
 	insertTimer();
 }
 
@@ -159,4 +160,18 @@ function startTimer(ss){
 		time_left.innerHTML = t;	
 	}
 	var t = setTimeout(function(){startTimer(ss)},1000);
+}
+
+function fetchTweets(){
+	var api = "http://localhost:8000/backend/feed-search/";
+	
+	chrome.runtime.sendMessage({
+	    method: 'GET',
+	    action: 'xhttp',
+	    url: api,
+	    data: 'q=something'
+	}, function(responseText) {
+	    alert(responseText);
+	    /*Callback function to deal with the response*/
+	});
 }

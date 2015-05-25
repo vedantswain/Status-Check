@@ -18,11 +18,12 @@
  ],
 
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["background.js"],
+    "persistent": false
   },
   "permissions": [
-      "tabs","http://*.facebook.com/*","https://*.facebook.com/*","https://twitter.com/*"
+      "tabs","http://*.facebook.com/*","https://*.facebook.com/*","http://localhost/*"
     ],
  
-   "web_accessible_resources": ["popup.js", "fbScript.js"]
+   "web_accessible_resources": ["popup.js", "fbScript.js","inject.js","background.js"]
 }
