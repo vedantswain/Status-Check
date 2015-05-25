@@ -21,7 +21,7 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-      "tabs","http://*.facebook.com/*","https://*.facebook.com/*"
+      "tabs","http://*.facebook.com/*","https://*.facebook.com/*","https://twitter.com/*"
     ],
  
    "web_accessible_resources": ["popup.js", "fbScript.js"]

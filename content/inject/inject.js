@@ -123,6 +123,7 @@ function insertTimer(){
 
 	var today=new Date();
 	var start_secs=today.getSeconds();
+	
 	startTimer(start_secs);	
 }
 
