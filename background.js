@@ -16,6 +16,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
         if (method == 'POST') {
             xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         }
+        // alert(request.data);
         xhttp.send(request.data);
         return true; // prevents the callback from being called too early on return
     }

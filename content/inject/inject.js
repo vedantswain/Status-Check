@@ -1,7 +1,7 @@
 console.log("Injected!");
 
 var post_btn_class="_42ft _4jy0 _11b _4jy3 _4jy1 selected _51sy";
-var stat_el_id="u_0_10";
+var stat_el_id="u_0_11";
 var stat_txt_area_id="u_0_19";
 
 var post_btn;
@@ -70,8 +70,22 @@ function interceptPost(e){
 	timer_flag=1;
 	checked_flag=1;
 	post_btn.innerHTML="Post Now";
-	fetchTweets();
 	insertTimer();
+
+	query=getPostTxt();
+	if(query!=""){
+		fetchTweets(query);
+	}
+}
+
+function getPostTxt(){
+	var stat_txt_area=document.getElementById(stat_txt_area_id)
+	var val = stat_txt_area.value;
+    if (val != "") {
+    	console.log(val);
+        return val;
+    }
+    return ""
 }
 
 function editPost(e){
@@ -162,16 +176,21 @@ function startTimer(ss){
 	var t = setTimeout(function(){startTimer(ss)},1000);
 }
 
-function fetchTweets(){
+function fetchTweets(query){
 	var api = "http://localhost:8000/backend/feed-search/";
+	query=query.replace(/#/g,'');
+	console.log(query)
+	var dat="?q="+query;
+	var uri=encodeURI(api+dat);
+	console.log(uri);
 	
 	chrome.runtime.sendMessage({
 	    method: 'GET',
 	    action: 'xhttp',
-	    url: api,
-	    data: 'q=something'
+	    url: uri,
+	    data: null
 	}, function(responseText) {
-	    alert(responseText);
+	    console.log(responseText);
 	    /*Callback function to deal with the response*/
 	});
 }
