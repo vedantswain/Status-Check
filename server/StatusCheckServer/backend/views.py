@@ -48,6 +48,12 @@ def keywordExtract(query):
 
 	return keywords
 
+@csrf_exempt
+def analyseSentiment(request):
+	query=request.GET.get('q')
+	response=sentimentAnalysis(query)
+	return HttpResponse(json.dumps(response),content_type='application/json')
+
 def sentimentAnalysis(query):
 	url = 'http://api.meaningcloud.com/sentiment-1.2'
 	key = 'ce2985beb498d6efb14dfccb5e617334'
@@ -61,16 +67,23 @@ def sentimentAnalysis(query):
 	rsp = urllib2.urlopen(req)
 	content = rsp.read()
 	json_dict=json.loads(content)
+	resp_dict={}
+	resp_dict['status']=txt
 	print txt
 	if json_dict.get('score') is not None:
+		resp_dict['score']=json_dict.get('score')
 		print "Score: "+json_dict.get('score')
 	if json_dict.get('score_tag') is not None:
+		resp_dict['score_tag']=json_dict.get('score_tag')
 		print "Tag: "+json_dict.get('score_tag')
 	if json_dict.get('subjectivity') is not None:
+		resp_dict['subjectivity']=json_dict.get('subjectivity')
 		print "Subjectivity: "+json_dict.get('subjectivity')
 	if json_dict.get('irony') is not None:
+		resp_dict['irony']=json_dict.get('irony')
 		print "Irony: "+json_dict.get('irony')
 	# print "sentimentAnalysis"
+	return resp_dict
 
 def tweetFetch(keywords):
 	try:
