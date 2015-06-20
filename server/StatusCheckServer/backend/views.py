@@ -3,9 +3,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-import urllib, urllib2,json
+import urllib, urllib2,json,os
 from TwitterSearch import *
 from textblob import TextBlob
+from textblob.classifiers import NaiveBayesClassifier
 
 
 # Create your views here.
@@ -17,16 +18,25 @@ def index(request):
 @csrf_exempt
 def train(request):
 	response = "training over"
-	txt = "death to all white cops nationwide. I thought about shooting every white cop I see in the head until I’m either caught by the police or killed by them… Might kill at least 15 tomorrow, I’m plotting now."
-	txt = unicode(txt, 'utf-8')
-	wiki=TextBlob(txt)
-	tags=wiki.tags
-	words=[]
-	forbidden = ['IN','DT','CC','PRP'] # getting rid of pronouns, prepositions, determinants and conjunctions
-	for tag in tags:
-		if tag[1] not in forbidden:
-			words.append(tag[0])
-			response=words
+	__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+	read_file="training_posts.txt"
+	list_tuples = []
+	with open(os.path.join(__location__, read_file),"r") as r:
+		for line in r:
+			tabsep = line.strip().split('\t')
+			txt = tabsep[1] #right side of line contains the message
+			txt = unicode(txt, 'utf-8')
+			print(txt)
+			wiki=TextBlob(txt)
+			tags=wiki.tags
+			words=[]
+			forbidden = ['IN','DT','CC','PRP'] # getting rid of pronouns, prepositions, determinants and conjunctions
+			for tag in tags:
+				if tag[1] not in forbidden:
+					words.append(tag[0]) #left side contains the tag
+			for word in words:
+				list_tuples.append((word.lower(),tabsep[0]))
+		r.close()
 	return HttpResponse(response)
 
 @csrf_exempt
