@@ -1,1 +1,2 @@
 TwitterSearch==1.0.0
+textblob==0.9.1

@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import urllib, urllib2,json
 from TwitterSearch import *
+from textblob import TextBlob
 
 
 # Create your views here.
@@ -12,6 +13,21 @@ from TwitterSearch import *
 def index(request):
     return HttpResponse("Hello, world. You're at the StatusCheck index."
                         )
+
+@csrf_exempt
+def train(request):
+	response = "training over"
+	txt = "death to all white cops nationwide. I thought about shooting every white cop I see in the head until I’m either caught by the police or killed by them… Might kill at least 15 tomorrow, I’m plotting now."
+	txt = unicode(txt, 'utf-8')
+	wiki=TextBlob(txt)
+	tags=wiki.tags
+	words=[]
+	forbidden = ['IN','DT','CC','PRP'] # getting rid of pronouns, prepositions, determinants and conjunctions
+	for tag in tags:
+		if tag[1] not in forbidden:
+			words.append(tag[0])
+			response=words
+	return HttpResponse(response)
 
 @csrf_exempt
 def feedSearch(request):
