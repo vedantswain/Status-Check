@@ -3,11 +3,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-import urllib, urllib2,json,os
+import urllib, urllib2,json,os,time,random, math,nltk,numpy as np
 from TwitterSearch import *
 from textblob import TextBlob
 from textblob.classifiers import NaiveBayesClassifier
-
+from nltk import NaiveBayesClassifier as nbc
+from sklearn import svm
+from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
 
 # Create your views here.
 
@@ -20,24 +25,117 @@ def train(request):
 	response = "training over"
 	__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 	read_file="training_posts.txt"
+	vocab_doc="vocabulary.txt"
 	list_tuples = []
+	print 'importing data...'
+	a = time.time()
+	with open(os.path.join(__location__, vocab_doc),"r") as d:
+		for line in d:
+			vocabulary = line.strip().split('\t')
+	# print vocabulary
 	with open(os.path.join(__location__, read_file),"r") as r:
 		for line in r:
 			tabsep = line.strip().split('\t')
 			txt = tabsep[1] #right side of line contains the message
 			txt = unicode(txt, 'utf-8')
-			print(txt)
-			wiki=TextBlob(txt)
-			tags=wiki.tags
-			words=[]
-			forbidden = ['IN','DT','CC','PRP'] # getting rid of pronouns, prepositions, determinants and conjunctions
-			for tag in tags:
-				if tag[1] not in forbidden:
-					words.append(tag[0]) #left side contains the tag
-			for word in words:
-				list_tuples.append((word.lower(),tabsep[0]))
+			## Bag of words method
+			# print(tabsep[0])
+			# print(txt)
+			# wiki=TextBlob(txt)
+			# tags=wiki.tags
+			# words=[]
+			# forbidden = ['IN','DT','CC','PRP'] # getting rid of pronouns, prepositions, determinants and conjunctions
+			# for tag in tags:
+			# 	if tag[1] not in forbidden:
+			# 		words.append(tag[0]) #left side contains the tag
+			# for word in words:
+			# 	list_tuples.append((word.lower(),tabsep[0]))
+			## Automatic feature extractor method
+			list_tuples.append((txt,tabsep[0]))
 		r.close()
+	entire_data=list_tuples
+	print "It took "+str(time.time()-a)+" seconds to import data"
+	print 'data imported'
+	# train=entire_data
+	accuracy_results=[]
+	for i in range(0,1000):
+		# accuracy_results.append(train_nbc(entire_data,vocabulary))
+		accuracy_results.append(train_svm(entire_data,vocabulary))
+	print accuracy_results
+	# post="Awks kejru moment while convocating"
+	# classify(post,cl)
+	# post="Mondays, you've met your match."
+	# classify(post,cl)
+	# post="Russia Celebrates it. India calls it a political gimmick. Incredible India."
+	# classify(post,cl)
+	# post="NARSEEMOONJEEE , yaaay this is really happening :')"
+	# classify(post,cl)
+	# post="A true friendship can't be broken by anything, not even DLC"
+	# classify(post,cl)
+	
 	return HttpResponse(response)
+
+def train_nbc(entire_data,vocabulary):
+	random.seed()
+	random.shuffle(entire_data)
+	list_len=len(entire_data)
+	break_point=int(math.floor(list_len*0.9))
+	train = entire_data[:break_point-1]	#splitting data into training and testing sets
+	test = entire_data[break_point:]
+	# print 'training data'
+	a = time.time()
+	# cl = NaiveBayesClassifier(train)
+	## Training with custom features
+	# print 'extracting features'
+	feature_set = [({i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary},data_point[1]) for data_point in train]
+	test_set =  [({i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary},data_point[1]) for data_point in test]
+	# print feature_set
+	cl = nbc.train(feature_set)
+	# print "It took "+str(time.time()-a)+" seconds to train data"
+	# print 'data trained, now checking accuracy:'
+	a = time.time()
+	# accuracy = cl.accuracy(test)
+	accuracy = nltk.classify.accuracy(cl, test_set)
+	print "accuracy: "+str(round(accuracy*100, 2))+"%"
+	# print "It took "+str(time.time()-a)+" seconds to test accuracy"
+	return accuracy*100
+
+def train_svm(entire_data,vocabulary):
+	random.seed()
+	random.shuffle(entire_data)
+	list_len=len(entire_data)
+	break_point=int(math.floor(list_len*0.8))
+	train = entire_data[:break_point-1]	#splitting data into training and testing sets
+	random.shuffle(entire_data)
+	test = entire_data[break_point:]
+	# test = train
+	# print 'training data'
+	a = time.time()
+	## Training with custom features
+	count_vect = CountVectorizer()
+	train_data = [data_point[0] for data_point in train]
+	train_target = [data_point[1] for data_point in train]
+	X_train_counts = count_vect.fit_transform(train_data)
+	tf_transformer = TfidfTransformer(use_idf=False).fit(X_train_counts)
+	X_train_tf = tf_transformer.transform(X_train_counts)
+	# print X_train_tf.shape
+	cl = Pipeline([('vect', CountVectorizer()),('tfidf', TfidfTransformer()),('cl', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)),])
+	cl.fit(train_data,train_target)
+	test_data = [data_point[0] for data_point in test]
+	test_target = [data_point[1] for data_point in test]
+	predicted = cl.predict(test_data)
+	accuracy=np.mean(predicted == test_target)            
+	# # print "It took "+str(time.time()-a)+" seconds to train data"
+	# # print 'data trained, now checking accuracy:'
+	# a = time.time()
+	print "accuracy: "+str(round(accuracy*100, 2))+"%"
+	return round(accuracy*100, 2)
+
+def classify(post,cl):
+	prob_dist = cl.prob_classify(post)
+	tag=prob_dist.max()
+	print post
+	print "There are "+str(round(prob_dist.prob(tag)*100, 2))+"%"+" chances this post is "+tag
 
 @csrf_exempt
 def feedSearch(request):
