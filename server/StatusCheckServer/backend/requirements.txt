@@ -1,2 +1,5 @@
 TwitterSearch==1.0.0
 textblob==0.9.1
+numpy==1.9.2
+scikit-learn==0.16.1
+scipy==0.15.1

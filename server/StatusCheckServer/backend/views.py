@@ -104,9 +104,9 @@ def train_svm(entire_data,vocabulary):
 	random.seed()
 	random.shuffle(entire_data)
 	list_len=len(entire_data)
-	break_point=int(math.floor(list_len*0.8))
+	break_point=int(math.floor(list_len*0.9))
 	train = entire_data[:break_point-1]	#splitting data into training and testing sets
-	random.shuffle(entire_data)
+	# random.shuffle(entire_data)
 	test = entire_data[break_point:]
 	# test = train
 	# print 'training data'
