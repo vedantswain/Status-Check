@@ -39,19 +39,6 @@ def train(request):
 			tabsep = line.strip().split('\t')
 			txt = tabsep[1] #right side of line contains the message
 			txt = unicode(txt, 'utf-8')
-			## Bag of words method
-			# print(tabsep[0])
-			# print(txt)
-			# wiki=TextBlob(txt)
-			# tags=wiki.tags
-			# words=[]
-			# forbidden = ['IN','DT','CC','PRP'] # getting rid of pronouns, prepositions, determinants and conjunctions
-			# for tag in tags:
-			# 	if tag[1] not in forbidden:
-			# 		words.append(tag[0]) #left side contains the tag
-			# for word in words:
-			# 	list_tuples.append((word.lower(),tabsep[0]))
-			## Automatic feature extractor method
 			list_tuples.append((txt,tabsep[0]))
 		r.close()
 	entire_data=list_tuples
@@ -59,7 +46,7 @@ def train(request):
 	print 'data imported'
 	# train=entire_data
 	accuracy_results=[]
-	for i in range(0,1):
+	for i in range(0,100):
 		# accuracy_results.append(train_nbc(entire_data,vocabulary))
 		accuracy_results.append(train_svm(entire_data,vocabulary))
 	print accuracy_results
@@ -117,31 +104,16 @@ def train_svm(entire_data,vocabulary):
 	## Training with custom features
 	count_vect = CountVectorizer()
 	train_data = [data_point[0] for data_point in train]
-	dict_vect = DictVectorizer()
 	feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in train]
-	X_train_features=dict_vect.fit_transform(feature_set)
 	train_target = [data_point[1] for data_point in train]
-	# X_train_counts = count_vect.fit_transform(train_data)
-	# tf_transformer = TfidfTransformer(use_idf=False).fit(X_train_counts)
-	# X_train_tf = tf_transformer.transform(X_train_counts)
-	# print X_train_features.shape
-	# print len(train_target)
-	# print X_train_tf.shape
-	# cl = Pipeline([('vect', CountVectorizer()),('tfidf', TfidfTransformer()),('cl', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)),])
-	cl=SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)
-	cl.fit(X_train_features,train_target)
-	# # cl.fit(train_data,train_target)
-	# # test_data = [data_point[0] for data_point in test]
+	cl = Pipeline([('vect', DictVectorizer()),('cl', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)),])
+	cl.fit(feature_set,train_target)
 	test_feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in test]
-	X_test_features=dict_vect.fit_transform(test_feature_set)
 	test_target = [data_point[1] for data_point in test]
-	# # predicted = cl.predict(test_data)
-	predicted=cl.predict(X_test_features)
+	predicted=cl.predict(test_feature_set)
 	accuracy=0
 	accuracy=np.mean(predicted == test_target)            
-	# # print "It took "+str(time.time()-a)+" seconds to train data"
-	# # print 'data trained, now checking accuracy:'
-	# a = time.time()
+
 	print "accuracy: "+str(round(accuracy*100, 2))+"%"
 	return round(accuracy*100, 2)
 
