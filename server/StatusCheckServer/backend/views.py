@@ -10,6 +10,7 @@ from textblob.classifiers import NaiveBayesClassifier
 from nltk import NaiveBayesClassifier as nbc
 from sklearn import svm
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
+from sklearn.feature_extraction import DictVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier
@@ -58,10 +59,12 @@ def train(request):
 	print 'data imported'
 	# train=entire_data
 	accuracy_results=[]
-	for i in range(0,1000):
+	for i in range(0,1):
 		# accuracy_results.append(train_nbc(entire_data,vocabulary))
 		accuracy_results.append(train_svm(entire_data,vocabulary))
 	print accuracy_results
+	print "mean accuracy: "
+	print sum(accuracy_results)/float(len(accuracy_results))
 	# post="Awks kejru moment while convocating"
 	# classify(post,cl)
 	# post="Mondays, you've met your match."
@@ -89,7 +92,7 @@ def train_nbc(entire_data,vocabulary):
 	# print 'extracting features'
 	feature_set = [({i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary},data_point[1]) for data_point in train]
 	test_set =  [({i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary},data_point[1]) for data_point in test]
-	# print feature_set
+	print feature_set
 	cl = nbc.train(feature_set)
 	# print "It took "+str(time.time()-a)+" seconds to train data"
 	# print 'data trained, now checking accuracy:'
@@ -114,16 +117,27 @@ def train_svm(entire_data,vocabulary):
 	## Training with custom features
 	count_vect = CountVectorizer()
 	train_data = [data_point[0] for data_point in train]
+	dict_vect = DictVectorizer()
+	feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in train]
+	X_train_features=dict_vect.fit_transform(feature_set)
 	train_target = [data_point[1] for data_point in train]
-	X_train_counts = count_vect.fit_transform(train_data)
-	tf_transformer = TfidfTransformer(use_idf=False).fit(X_train_counts)
-	X_train_tf = tf_transformer.transform(X_train_counts)
+	# X_train_counts = count_vect.fit_transform(train_data)
+	# tf_transformer = TfidfTransformer(use_idf=False).fit(X_train_counts)
+	# X_train_tf = tf_transformer.transform(X_train_counts)
+	# print X_train_features.shape
+	# print len(train_target)
 	# print X_train_tf.shape
-	cl = Pipeline([('vect', CountVectorizer()),('tfidf', TfidfTransformer()),('cl', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)),])
-	cl.fit(train_data,train_target)
-	test_data = [data_point[0] for data_point in test]
+	# cl = Pipeline([('vect', CountVectorizer()),('tfidf', TfidfTransformer()),('cl', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)),])
+	cl=SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)
+	cl.fit(X_train_features,train_target)
+	# # cl.fit(train_data,train_target)
+	# # test_data = [data_point[0] for data_point in test]
+	test_feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in test]
+	X_test_features=dict_vect.fit_transform(test_feature_set)
 	test_target = [data_point[1] for data_point in test]
-	predicted = cl.predict(test_data)
+	# # predicted = cl.predict(test_data)
+	predicted=cl.predict(X_test_features)
+	accuracy=0
 	accuracy=np.mean(predicted == test_target)            
 	# # print "It took "+str(time.time()-a)+" seconds to train data"
 	# # print 'data trained, now checking accuracy:'
