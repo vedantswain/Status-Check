@@ -25,8 +25,8 @@ def index(request):
 def train(request):
 	response = "training over"
 	__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-	read_file="training_posts.txt"
-	vocab_doc="vocabulary.txt"
+	read_file="training_posts_2.txt"
+	vocab_doc="vocabulary_2.txt"
 	list_tuples = []
 	print 'importing data...'
 	a = time.time()
@@ -46,9 +46,13 @@ def train(request):
 	print 'data imported'
 	# train=entire_data
 	accuracy_results=[]
-	for i in range(0,100):
+	b=time.time()
+	for i in range(0,500):
 		# accuracy_results.append(train_nbc(entire_data,vocabulary))
+		a=time.time()
 		accuracy_results.append(train_svm(entire_data,vocabulary))
+		print str(i)+"th iteration: "+str(time.time()-a)+" seconds to train data"
+	print "It took "+str(time.time()-b)+" seconds total"
 	print accuracy_results
 	print "mean accuracy: "
 	print sum(accuracy_results)/float(len(accuracy_results))
@@ -102,14 +106,24 @@ def train_svm(entire_data,vocabulary):
 	# print 'training data'
 	a = time.time()
 	## Training with custom features
-	count_vect = CountVectorizer()
-	train_data = [data_point[0] for data_point in train]
+	# count_vect = CountVectorizer()
+	# train_data = [data_point[0] for data_point in train]
 	feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in train]
+	for feat,data_point in zip(feature_set,train):
+		feat['polarity']=TextBlob(data_point[0].lower()).sentiment.polarity
+		# feat['subjectivity']=TextBlob(data_point[0].lower()).sentiment.subjectivity
+		# print data_point[1]+" - "+str(feat['polarity'])
 	train_target = [data_point[1] for data_point in train]
 	cl = Pipeline([('vect', DictVectorizer()),('cl', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)),])
 	cl.fit(feature_set,train_target)
-	test_feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in test]
-	test_target = [data_point[1] for data_point in test]
+	
+	# test_feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in test]
+	# for feat,data_point in zip(test_feature_set,test):
+	# 	feat['polarity']=TextBlob(data_point[0].lower()).sentiment.polarity
+		# feat['subjectivity']=TextBlob(data_point[0].lower()).sentiment.subjectivity
+	# test_target = [data_point[1] for data_point in test]
+	test_feature_set=feature_set
+	test_target=train_target
 	predicted=cl.predict(test_feature_set)
 	accuracy=0
 	accuracy=np.mean(predicted == test_target)            
