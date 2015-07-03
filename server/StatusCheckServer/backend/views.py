@@ -47,7 +47,7 @@ def train(request):
 	# train=entire_data
 	accuracy_results=[]
 	b=time.time()
-	for i in range(0,500):
+	for i in range(0,1):
 		# accuracy_results.append(train_nbc(entire_data,vocabulary))
 		a=time.time()
 		accuracy_results.append(train_svm(entire_data,vocabulary))
@@ -56,43 +56,8 @@ def train(request):
 	print accuracy_results
 	print "mean accuracy: "
 	print sum(accuracy_results)/float(len(accuracy_results))
-	# post="Awks kejru moment while convocating"
-	# classify(post,cl)
-	# post="Mondays, you've met your match."
-	# classify(post,cl)
-	# post="Russia Celebrates it. India calls it a political gimmick. Incredible India."
-	# classify(post,cl)
-	# post="NARSEEMOONJEEE , yaaay this is really happening :')"
-	# classify(post,cl)
-	# post="A true friendship can't be broken by anything, not even DLC"
-	# classify(post,cl)
 	
 	return HttpResponse(response)
-
-def train_nbc(entire_data,vocabulary):
-	random.seed()
-	random.shuffle(entire_data)
-	list_len=len(entire_data)
-	break_point=int(math.floor(list_len*0.9))
-	train = entire_data[:break_point-1]	#splitting data into training and testing sets
-	test = entire_data[break_point:]
-	# print 'training data'
-	a = time.time()
-	# cl = NaiveBayesClassifier(train)
-	## Training with custom features
-	# print 'extracting features'
-	feature_set = [({i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary},data_point[1]) for data_point in train]
-	test_set =  [({i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary},data_point[1]) for data_point in test]
-	print feature_set
-	cl = nbc.train(feature_set)
-	# print "It took "+str(time.time()-a)+" seconds to train data"
-	# print 'data trained, now checking accuracy:'
-	a = time.time()
-	# accuracy = cl.accuracy(test)
-	accuracy = nltk.classify.accuracy(cl, test_set)
-	print "accuracy: "+str(round(accuracy*100, 2))+"%"
-	# print "It took "+str(time.time()-a)+" seconds to test accuracy"
-	return accuracy*100
 
 def train_svm(entire_data,vocabulary):
 	random.seed()
@@ -117,25 +82,61 @@ def train_svm(entire_data,vocabulary):
 	cl = Pipeline([('vect', DictVectorizer()),('cl', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42)),])
 	cl.fit(feature_set,train_target)
 	
-	# test_feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in test]
-	# for feat,data_point in zip(test_feature_set,test):
-	# 	feat['polarity']=TextBlob(data_point[0].lower()).sentiment.polarity
+	test_feature_set = [{i:(i in TextBlob(data_point[0].lower()).words) for i in vocabulary} for data_point in test]
+	for feat,data_point in zip(test_feature_set,test):
+		feat['polarity']=TextBlob(data_point[0].lower()).sentiment.polarity
 		# feat['subjectivity']=TextBlob(data_point[0].lower()).sentiment.subjectivity
-	# test_target = [data_point[1] for data_point in test]
-	test_feature_set=feature_set
-	test_target=train_target
+	test_target = [data_point[1] for data_point in test]
+	# test_feature_set=feature_set
+	# test_target=train_target
 	predicted=cl.predict(test_feature_set)
 	accuracy=0
 	accuracy=np.mean(predicted == test_target)            
 
+	global svm_cl
+	svm_cl=cl
+
 	print "accuracy: "+str(round(accuracy*100, 2))+"%"
 	return round(accuracy*100, 2)
 
-def classify(post,cl):
-	prob_dist = cl.prob_classify(post)
-	tag=prob_dist.max()
+@csrf_exempt
+def classify(request):
+	post=request.GET.get('q')
 	print post
-	print "There are "+str(round(prob_dist.prob(tag)*100, 2))+"%"+" chances this post is "+tag
+	__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+	vocab_doc="vocabulary_2.txt"
+	with open(os.path.join(__location__, vocab_doc),"r") as d:
+		for line in d:
+			vocabulary = line.strip().split('\t')
+	test_feature_set = [{i:(i in TextBlob(post.lower()).words) for i in vocabulary}]
+	for feat in test_feature_set:
+		feat['polarity']=TextBlob(post.lower()).sentiment.polarity
+
+	try:
+		svm_cl
+	except NameError:
+		print "SVM not defined. Starting training"
+		accuracy=0
+		while (True):
+			accuracy=train(request)
+			if accuracy>84:
+				break
+
+	predicted=svm_cl.predict(test_feature_set)
+	print predicted[0]
+
+	resp_dict={}
+	resp_dict['tag']=predicted[0]
+	words=[]
+	for key in test_feature_set[0]:
+		if (test_feature_set[0][key]==True):
+			words.append(test_feature_set[0][key])
+	resp_dict['polarity']=test_feature_set[0]['polarity']
+	resp_dict['words']=words
+
+	response=resp_dict
+
+	return HttpResponse(json.dumps(response),content_type='application/json')
 
 @csrf_exempt
 def feedSearch(request):

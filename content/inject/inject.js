@@ -89,7 +89,8 @@ function interceptPost(e){
 	query=getPostTxt();
 	if(query!=""){
 		// getPostSentiment(query);
-		fetchTweets(query);
+		// fetchTweets(query);
+		classifyDanger(query);
 	}
 }
 
@@ -107,6 +108,7 @@ function editPost(e){
 	removeTimer();
 	removeSentiment();
 	removeTweets();
+	removeClassification();
 	console.log("Edit");
 	timer_flag=0;
 	checked_flag=0;
@@ -123,6 +125,7 @@ function cancelPost(e){
 	removeTimer();
 	removeSentiment();
 	removeTweets();
+	removeClassification();
 	post_btn.innerHTML="Check";
 
 	// var stat_txt_area=document.getElementById(stat_txt_area_id);
@@ -447,5 +450,124 @@ function removeTweets(){
 	
 	if(tweets_div!=null){
 		stat_el.removeChild(tweets_div);
+	}
+}
+
+function classifyDanger(query){
+	var api = "http://localhost:8000/backend/classify/";
+	query=query.replace(/#/g,'');
+	console.log(query)
+	var dat="?q="+query;
+	var uri=encodeURI(api+dat);
+	console.log(uri);
+
+	insertLoader();	
+
+	chrome.runtime.sendMessage({
+	    method: 'GET',
+	    action: 'xhttp',
+	    url: uri,
+	    data: null
+	}, function(responseText) {
+	    // console.log(responseText);
+	    insertClassification(responseText)
+	    /*Callback function to deal with the response*/
+	});
+}
+
+function insertClassification(txt){
+	obj = JSON.parse(txt);
+	tag = obj.tag;
+	polarity = obj.polarity;
+	keywords = obj.words;
+	// console.log(keywords);
+
+	message_header="Your post is "
+	message_q1=""
+	message_q2=""
+	sentiment=""
+	message_q3=""
+	if(tag=='safe'){
+		if(polarity<0){
+			message_q1="probably "
+			message_q2=" but it has a"
+			sentiment="negative sentiment"
+		}
+		if(keywords.length>0){
+			message_q3=". Be careful when you're talking about: "
+		}
+	}
+	else{
+		tag='dangerous'
+		if(polarity<0){
+			message_q1="probably "
+			message_q2=" because it has a"
+			sentiment="negative sentiment"
+		}
+		if(keywords.length>0){
+			message_q3=". Be careful when you're talking about: "
+		}
+	}
+	
+	if(tag=='safe'){
+		color_hex='#00a770'
+	}
+	else{
+		color_hex='#ba2600'
+	}
+	
+	tag_decoration=' <b style="color:#ffffff;border: 1px solid;border-radius: 5px; border-color:#ffffff;padding: 2px;background-color:'+color_hex+'">'+tag+'</b>'
+	
+	if(sentiment == "negative sentiment"){
+		color_hex='#ba2600'
+	}
+	else{
+		color_hex=""
+	}
+
+	sentiment_decoration=' <b style="color:#ffffff;border: 1px solid;border-radius: 5px; border-color:#ffffff;padding: 2px;background-color:'+color_hex+'">'+sentiment+'</b>'
+	
+	words_decoration= '<b>'+keywords+'</b>'
+
+	message=message_header+message_q1+tag_decoration+message_q2+sentiment_decoration+message_q3+words_decoration
+
+	var html='<div>'
+	html += '<p style="color:#4f4f4f;float:left;font-size: 14px">'+message+'</p>';
+	html += '</div>'
+	
+	//Edit Button
+	html += '<div>'
+	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
+	//Cancel Button
+	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
+	html += '</div>'
+
+	var div = document.createElement('div');
+	div.setAttribute("id", "ClassificationDiv");
+	div.innerHTML = html;
+	div.style.height="61px";
+	div.style.width="491px";
+	div.style.padding="5px";
+	// div.style.border = "solid #0000FF";
+
+	removeLoader()
+
+	var stat_el=document.getElementById(stat_el_id);
+	stat_el.appendChild(div);
+
+	// document.getElementById("indicator").disabled = true;
+
+	var edit_btn=document.getElementById("edit_status");
+	edit_btn.addEventListener("click",editPost, false);
+	var cancel_btn=document.getElementById("cancel_status");
+	cancel_btn.addEventListener("click",cancelPost, false);
+}
+
+function removeClassification(){
+	var classification_div=document.getElementById("ClassificationDiv");
+	var stat_el=document.getElementById(stat_el_id);
+	
+	if(classification_div!=null){
+		stat_el.removeChild(classification_div);
 	}
 }
