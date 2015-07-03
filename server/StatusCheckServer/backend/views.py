@@ -145,9 +145,13 @@ def feedSearch(request):
     print query
     keywords=keywordExtract(query)
     print (keywords)
-    tweetFetch(keywords)
+    tweet_dict=tweetFetch(keywords)
+
+    resp={}
+    resp['tweets']=tweet_dict
+    resp['keywords']=keywords
     
-    return HttpResponse(response)
+    return HttpResponse(json.dumps(resp),content_type='application/json')
 
 def keywordExtract(query):
 	keywords=[]
@@ -210,6 +214,7 @@ def sentimentAnalysis(query):
 	return resp_dict
 
 def tweetFetch(keywords):
+	filtered_tweets=[]
 	try:
 	    print "fetching from Twitter"
 	    tso = TwitterSearchOrder()  # create a TwitterSearchOrder object
@@ -231,12 +236,18 @@ def tweetFetch(keywords):
 
 	     # this is where the fun actually starts :)
 	    count=0
-	    tweet_limit=10 #limit to first 10 results
+	    tweet_limit=9 #limit to first 10 results
 
 	    for tweet in ts.search_tweets_iterable(tso):
 	        # print tweet['text']
-	        sentimentAnalysis(tweet['text'])
+	        sent_resp=sentimentAnalysis(tweet['text'])
 	        count+=1
+	        tweet_object={}
+	        tweet_object['post']=tweet['text']
+	        if 'score_tag' in sent_resp:
+	        	tweet_object['score_tag']=sent_resp['score_tag']
+	        if(tweet_object not in filtered_tweets):
+	        	filtered_tweets.append(tweet_object)
 	        print count
 	        if(count>tweet_limit):
 	        	break
@@ -244,3 +255,5 @@ def tweetFetch(keywords):
 	except TwitterSearchException, e:
 
 	    print e  # take care of all those ugly errors if there are some
+
+	return filtered_tweets

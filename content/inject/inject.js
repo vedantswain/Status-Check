@@ -88,8 +88,8 @@ function interceptPost(e){
 
 	query=getPostTxt();
 	if(query!=""){
-		getPostSentiment(query);
-		// fetchTweets(query);
+		// getPostSentiment(query);
+		fetchTweets(query);
 	}
 }
 
@@ -105,6 +105,8 @@ function getPostTxt(){
 
 function editPost(e){
 	removeTimer();
+	removeSentiment();
+	removeTweets();
 	console.log("Edit");
 	timer_flag=0;
 	checked_flag=0;
@@ -119,6 +121,8 @@ function cancelPost(e){
 	timer_flag=0;
 	checked_flag=0;
 	removeTimer();
+	removeSentiment();
+	removeTweets();
 	post_btn.innerHTML="Check";
 
 	// var stat_txt_area=document.getElementById(stat_txt_area_id);
@@ -191,6 +195,32 @@ function startTimer(ss){
 	var t = setTimeout(function(){startTimer(ss)},1000);
 }
 
+function insertLoader(){
+	var html = '<img src="https://media.giphy.com/media/ToMjGpBODSELuQDrKSs/giphy.gif" style="width:16px;height:16px;">'
+	
+	var div = document.createElement('div');
+	div.setAttribute("id", "LoaderDiv");
+	div.innerHTML = html;
+	// div.style.height="128px";
+	// div.style.width="128px";
+	div.style.padding="10px";
+
+	var stat_el=document.getElementById(stat_el_id);
+	stat_el.appendChild(div);
+
+	console.log('insterted loader')
+}
+
+function removeLoader(){
+	var loader_div=document.getElementById("LoaderDiv");
+	var stat_el=document.getElementById(stat_el_id);
+	
+	if(loader_div!=null){
+		console.log('loader removed')
+		stat_el.removeChild(loader_div);
+	}
+}
+
 function getPostSentiment(query){
 	var api = "http://localhost:8000/backend/analyse-sentiment/";
 	// console.log(query)
@@ -200,16 +230,20 @@ function getPostSentiment(query){
 	var uri=encodeURI(api+dat);
 	console.log(uri);
 	
+	insertLoader()
+
 	chrome.runtime.sendMessage({
 	    method: 'GET',
 	    action: 'xhttp',
 	    url: uri,
 	    data: null
 	}, function(responseText) {
-	    console.log(responseText);
+	    // console.log(responseText);
 	    insertSentiment(responseText);
 	    /*Callback function to deal with the response*/
 	});
+
+	// removeLoader()
 }
 
 function insertSentiment(txt){
@@ -227,18 +261,33 @@ function insertSentiment(txt){
 		sentiment=obj.score_tag;
 	};
 	if (typeof obj.subjectivity!='undefined') {
-		subjectivity=obj.subjectivity;
+		subjectivity=obj.subjectivity.toLowerCase();
 	};
 	if (typeof obj.irony!='undefined') {
-		irony=obj.irony;
+		irony=obj.irony.toLowerCase();
 	};
+
+	sentiment_tag=""
+	if(sentiment.includes('+')){
+		sentiment_tag="strongly "
+	}
+
+	if(sentiment.includes('P')){
+		sentiment_tag+="positive"
+	}
+	else if(sentiment=='NEU'){
+		sentiment_tag="neutral"
+	}
+	else{
+		sentiment_tag+="negative"
+	}
 
 	var html='<div>'
 	html += '<p style="float:left;font-size: 12px">Your post is '
-	html +='<b id="sentiment">'+sentiment+'</b>';
+	html +='<b id="sentiment">'+sentiment_tag+'</b>';
 	html +=' with a score of <b id="score">'+score+'</b>';
-	html += ' <b id="subjectivity">'+subjectivity+'</b>';
-	html += ' <b id="irony">'+irony+'</b></p>';
+	html += ' <b id="subjectivity" style="color:#ffffff;border: 2px solid;border-radius: 10px;; border-color:#38619a;background-color:#38619a;padding: 2px">'+subjectivity+'</b>';
+	html += ' <b id="irony" style="color:#ffffff;border: 2px solid;border-radius: 10px;; border-color:#38619a;background-color:#38619a;padding: 2px">'+irony+'</b></p>';
 	html += '</div>'
 	//Indicator
 	// html +='<input id="indicator" type="range" min="1" max="100" step="1" value="15 style="float:left">'
@@ -249,8 +298,20 @@ function insertSentiment(txt){
 	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
 	html += '</div>'
 
-	html +='<div style="width:330px;height:10px;margin:2px;background:#CCC;border-radius:5px;float:left;">'
-    html+='<div style="width:25%;height:10px;background:#F00;border-radius:5px;text-align:center;"><span></span></div></div>'
+	score=Math.abs(score*100)
+
+	if(sentiment=='P' || sentiment=='P+'){
+		color_hex='#00a770'
+	}
+	else if(sentiment=='N' || sentiment=='N+'){
+		color_hex='#ba2600'
+	}
+	else if(sentiment=='NEU'){
+		color_hex='#ffd249'
+	}
+
+	html +='<div style="width:300px;height:10px;margin:2px;background:#CCC;border-radius:5px;float:left;">'
+    html+='<div style="width:'+score+'%;height:10px;background:'+color_hex+';border-radius:5px;text-align:center;"><span></span></div></div>'
 
 	var div = document.createElement('div');
 	div.setAttribute("id", "SentimentDiv");
@@ -259,6 +320,8 @@ function insertSentiment(txt){
 	div.style.width="491px";
 	div.style.padding="5px";
 	// div.style.border = "solid #0000FF";
+
+	removeLoader()
 
 	var stat_el=document.getElementById(stat_el_id);
 	stat_el.appendChild(div);
@@ -271,6 +334,15 @@ function insertSentiment(txt){
 	cancel_btn.addEventListener("click",cancelPost, false);
 }
 
+function removeSentiment(){
+	var sentiment_div=document.getElementById("SentimentDiv");
+	var stat_el=document.getElementById(stat_el_id);
+	
+	if(sentiment_div!=null){
+		stat_el.removeChild(sentiment_div);
+	}
+}
+
 function fetchTweets(query){
 	var api = "http://localhost:8000/backend/feed-search/";
 	query=query.replace(/#/g,'');
@@ -278,14 +350,102 @@ function fetchTweets(query){
 	var dat="?q="+query;
 	var uri=encodeURI(api+dat);
 	console.log(uri);
-	
+
+	insertLoader();	
+
 	chrome.runtime.sendMessage({
 	    method: 'GET',
 	    action: 'xhttp',
 	    url: uri,
 	    data: null
 	}, function(responseText) {
-	    console.log(responseText);
+	    // console.log(responseText);
+	    insertTweets(responseText)
 	    /*Callback function to deal with the response*/
 	});
+}
+
+function insertTweets(txt){
+	obj = JSON.parse(txt);
+	// console.log(obj);
+	tweets = obj.tweets;
+	// console.log(tweets);
+	keywords = obj.keywords;
+	// console.log(keywords);
+	var html='<div>'
+	html += '<p style="color:#4f4f4f;float:left;font-size: 14px">Other posts talking about '
+	html +='<b>'+keywords+'</b> :</p>';
+
+	html +='<ul style="float:left">'
+	for (var i=0; i<tweets.length;i++){
+		// console.log(tweets[i].score_tag)
+		html+='<li style="color:#4f4f4f;margin-bottom: 20px">'+tweets[i].post
+
+		sentiment_tag=""
+		color_hex=""
+
+		if(typeof(tweets[i].score_tag)==='undefined'){
+			sentiment_tag="neutral"
+			color_hex='#ffd249'
+		}
+		else{
+			sentiment=tweets[i].score_tag
+			console.log('defined:')
+			if(sentiment.includes('P')){
+				sentiment_tag="positive"
+				color_hex='#00a770'
+			}
+			else if(sentiment=='NEU'){
+				sentiment_tag="neutral"
+				color_hex='#ffd249'
+			}
+			else{
+				sentiment_tag="negative"
+				color_hex='#ba2600'
+			}
+		}
+
+		// console.log(tweets[i].score_tag)
+
+		html += ' <b style="color:#ffffff;border: 1px solid;border-radius: 5px; border-color:#ffffff;padding: 2px;background-color:'+color_hex+'">'+sentiment_tag+'</b></li>';
+	
+	}
+	html +='</ul>'
+	html += '</div>'
+	
+	//Edit Button
+	html += '<div>'
+	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
+	//Cancel Button
+	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
+	html += '</div>'
+
+	var div = document.createElement('div');
+	div.setAttribute("id", "TweetsDiv");
+	div.innerHTML = html;
+	div.style.height="61px";
+	div.style.width="491px";
+	div.style.padding="5px";
+	// div.style.border = "solid #0000FF";
+
+	removeLoader()
+
+	var stat_el=document.getElementById(stat_el_id);
+	stat_el.appendChild(div);
+
+	// document.getElementById("indicator").disabled = true;
+
+	var edit_btn=document.getElementById("edit_status");
+	edit_btn.addEventListener("click",editPost, false);
+	var cancel_btn=document.getElementById("cancel_status");
+	cancel_btn.addEventListener("click",cancelPost, false);
+}
+
+function removeTweets(){
+	var tweets_div=document.getElementById("TweetsDiv");
+	var stat_el=document.getElementById(stat_el_id);
+	
+	if(tweets_div!=null){
+		stat_el.removeChild(tweets_div);
+	}
 }
