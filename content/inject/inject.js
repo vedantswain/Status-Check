@@ -89,8 +89,8 @@ function interceptPost(e){
 	query=getPostTxt();
 	if(query!=""){
 		// getPostSentiment(query);
-		fetchTweets(query);
-		// classifyDanger(query);
+		// fetchTweets(query);
+		classifyDanger(query);
 	}
 }
 

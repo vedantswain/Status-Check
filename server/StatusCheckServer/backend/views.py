@@ -130,7 +130,7 @@ def classify(request):
 	words=[]
 	for key in test_feature_set[0]:
 		if (test_feature_set[0][key]==True):
-			words.append(test_feature_set[0][key])
+			words.append(key)
 	resp_dict['polarity']=test_feature_set[0]['polarity']
 	resp_dict['words']=words
 
@@ -146,10 +146,12 @@ def feedSearch(request):
     print query
     keywords=keywordExtract(query)
     print (keywords)
+    # print (type(keywords))
     tweet_dict=tweetFetch(keywords)
 
     resp={}
     resp['tweets']=tweet_dict
+    # keywords=filter(lambda a: a != 'OR', keywords)
     resp['keywords']=keywords
     
     return HttpResponse(json.dumps(resp),content_type='application/json')
