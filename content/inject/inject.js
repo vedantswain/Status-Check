@@ -29,7 +29,7 @@ function listener()
     }
 
     prev_url=curr_url;
-}
+} 
 
 //To handle Facebook's dynamic ajax based page loading
 document.addEventListener("DOMSubtreeModified", listener, false);
@@ -89,8 +89,8 @@ function interceptPost(e){
 	query=getPostTxt();
 	if(query!=""){
 		// getPostSentiment(query);
-		// fetchTweets(query);
-		classifyDanger(query);
+		fetchTweets(query);
+		// classifyDanger(query);
 	}
 }
 
@@ -382,7 +382,11 @@ function insertTweets(txt){
 	html +='<ul style="float:left">'
 	for (var i=0; i<tweets.length;i++){
 		// console.log(tweets[i].score_tag)
-		html+='<li style="color:#4f4f4f;margin-bottom: 20px">'+tweets[i].post
+		post_txt=tweets[i].post
+		replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim
+		post_txt=post_txt.replace( replacePattern1 , '<a href="$1" target="_blank">$1</a>' )
+
+		html+='<li style="color:#4f4f4f;margin-bottom: 20px">'+post_txt
 
 		sentiment_tag=""
 		color_hex=""
