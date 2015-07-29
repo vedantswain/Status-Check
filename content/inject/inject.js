@@ -88,9 +88,9 @@ function interceptPost(e){
 
 	query=getPostTxt();
 	if(query!=""){
-		// getPostSentiment(query);
+		getPostSentiment(query);
 		// fetchTweets(query);
-		classifyDanger(query);
+		// classifyDanger(query);
 	}
 }
 
@@ -225,7 +225,9 @@ function removeLoader(){
 }
 
 function getPostSentiment(query){
-	var api = "http://localhost:8000/backend/analyse-sentiment/";
+	//var api = "http://localhost:8000/backend/analyse-sentiment/";
+	// var api = "http://192.168.1.6:1235/backend/analyse-sentiment/";
+	var api="http://multiosn.iiitd.edu.in/backend/analyse-sentiment/";
 	// console.log(query)
 	query=query.replace(/#/g,'');
 	console.log(query)
@@ -257,9 +259,9 @@ function insertSentiment(txt){
 	var subjectivity="";
 	var irony="";
 
-	if (typeof obj.score!='undefined') {
-		score=obj.score;
-	};
+	// if (typeof obj.score!='undefined') {
+	// 	score=obj.score;
+	// };
 	if(typeof obj.score_tag!='undefined') {
 		sentiment=obj.score_tag;
 	};
@@ -285,10 +287,22 @@ function insertSentiment(txt){
 		sentiment_tag+="negative"
 	}
 
+	color_hex='ffd249'
+
+	if(sentiment=='P' || sentiment=='P+'){
+		color_hex='#00a770'
+	}
+	else if(sentiment=='N' || sentiment=='N+'){
+		color_hex='#ba2600'
+	}
+	else if(sentiment=='NEU'){
+		color_hex='#ffd249'
+	}
+
 	var html='<div>'
 	html += '<p style="float:left;font-size: 12px">Your post is '
-	html +='<b id="sentiment">'+sentiment_tag+'</b>';
-	html +=' with a score of <b id="score">'+score+'</b>';
+	html +='<b id="sentiment" style="color:#ffffff;border: 1px solid;border-radius: 5px;; border-color:#ffffff;background-color:'+color_hex+';padding: 2px">'+sentiment_tag+'</b>';
+	// html +=' with a score of <b id="score">'+score+'</b>';
 	html += ' <b id="subjectivity" style="color:#ffffff;border: 2px solid;border-radius: 10px;; border-color:#38619a;background-color:#38619a;padding: 2px">'+subjectivity+'</b>';
 	html += ' <b id="irony" style="color:#ffffff;border: 2px solid;border-radius: 10px;; border-color:#38619a;background-color:#38619a;padding: 2px">'+irony+'</b></p>';
 	html += '</div>'
@@ -301,20 +315,10 @@ function insertSentiment(txt){
 	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
 	html += '</div>'
 
-	score=Math.abs(score*100)
+	score=Math.abs(score*100)	
 
-	if(sentiment=='P' || sentiment=='P+'){
-		color_hex='#00a770'
-	}
-	else if(sentiment=='N' || sentiment=='N+'){
-		color_hex='#ba2600'
-	}
-	else if(sentiment=='NEU'){
-		color_hex='#ffd249'
-	}
-
-	html +='<div style="width:300px;height:10px;margin:2px;background:#CCC;border-radius:5px;float:left;">'
-    html+='<div style="width:'+score+'%;height:10px;background:'+color_hex+';border-radius:5px;text-align:center;"><span></span></div></div>'
+	// html +='<div style="width:300px;height:10px;margin:2px;background:#CCC;border-radius:5px;float:left;">'
+ //    html+='<div style="width:'+score+'%;height:10px;background:'+color_hex+';border-radius:5px;text-align:center;"><span></span></div></div>'
 
 	var div = document.createElement('div');
 	div.setAttribute("id", "SentimentDiv");
@@ -347,7 +351,9 @@ function removeSentiment(){
 }
 
 function fetchTweets(query){
-	var api = "http://localhost:8000/backend/feed-search/";
+	//var api = "http://localhost:8000/backend/feed-search/";
+	// var api = "http://192.168.1.6:1235/backend/feed-search/";
+	var api="http://multiosn.iiitd.edu.in/backend/feed-search/";
 	query=query.replace(/#/g,'');
 	console.log(query)
 	var dat="?q="+query;
@@ -458,7 +464,8 @@ function removeTweets(){
 }
 
 function classifyDanger(query){
-	var api = "http://localhost:8000/backend/classify/";
+	//var api = "http://localhost:8000/backend/classify/";
+	var api="http://multiosn.iiitd.edu.in/backend/classify/";
 	query=query.replace(/#/g,'');
 	console.log(query)
 	var dat="?q="+query;
@@ -473,7 +480,7 @@ function classifyDanger(query){
 	    url: uri,
 	    data: null
 	}, function(responseText) {
-	    // console.log(responseText);
+	    //console.log(responseText);
 	    insertClassification(responseText)
 	    /*Callback function to deal with the response*/
 	});

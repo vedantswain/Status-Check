@@ -22,7 +22,7 @@
     "persistent": false
   },
   "permissions": [
-      "tabs","http://*.facebook.com/*","https://*.facebook.com/*","http://localhost/*"
+      "tabs","http://*.facebook.com/*","https://*.facebook.com/*","http://localhost/*","http://multiosn.iiitd.edu.in/*","http://192.168.1.6:1235/*"
     ],
  
    "web_accessible_resources": ["popup.js", "fbScript.js","inject.js","background.js"]

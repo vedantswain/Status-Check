@@ -186,11 +186,11 @@ def analyseSentiment(request):
 	return HttpResponse(json.dumps(response),content_type='application/json')
 
 def sentimentAnalysis(query):
-	url = 'http://api.meaningcloud.com/sentiment-1.2'
+	url = 'http://api.meaningcloud.com/sentiment-2.0'
 	key = 'ce2985beb498d6efb14dfccb5e617334'
 	txt = query.encode('utf-8')
 	of = 'json'
-	model = 'en-general'
+	model = 'general_en'
 	values = dict(key=key, txt=txt, of=of,model=model)
 	# print txt
 	data = urllib.urlencode(values)
