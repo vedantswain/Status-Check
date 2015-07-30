@@ -13,8 +13,7 @@ var prev_url;
 var checked_flag=0;
 var timer_flag=0;
 
-function listener()
-{
+function listener(){
 	curr_url=window.location.href;
 
 	if(curr_url!=prev_url){
@@ -88,10 +87,22 @@ function interceptPost(e){
 
 	query=getPostTxt();
 	if(query!=""){
-		getPostSentiment(query);
-		// fetchTweets(query);
+		addStatus(query);
+		// getPostSentiment(query);
+		fetchTweets(query);
 		// classifyDanger(query);
 	}
+}
+
+function addStatus(q){
+	chrome.runtime.sendMessage({
+	    action: 'db',
+	    data: q
+	}, function(responseText) {
+	    console.log(responseText);
+	    // insertClassification(responseText)
+	    /*Callback function to deal with the response*/
+	});
 }
 
 function getPostTxt(){
