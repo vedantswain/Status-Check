@@ -3,7 +3,7 @@ statusCheckDB.webdb={};
 
 statusCheckDB.webdb.open=function() {
   var dbSize = 1 * 1024 * 1024; // 1MB
-  statusCheckDB.webdb.db = openDatabase("StatusCheck", "1", "Status Log manager", dbSize);
+  statusCheckDB.webdb.db = openDatabase("StatusCheckDB", "1", "Status Log manager", dbSize);
   console.log("Opened DB");
 }
 
@@ -22,17 +22,17 @@ statusCheckDB.webdb.createTable = function() {
   var db = statusCheckDB.webdb.db;
   db.transaction(function(tx) {
     tx.executeSql("CREATE TABLE IF NOT EXISTS " +
-                  "StatusCheck(ID INTEGER PRIMARY KEY ASC, status TEXT, added_on DATETIME)", []);
+                  "StatusCheck(ID INTEGER PRIMARY KEY ASC, status TEXT, added_on DATETIME, nudge TEXT, reaction TEXT, duration INTEGER)", []);
   });
   console.log("Created Table");
 }
 
-statusCheckDB.webdb.addStatus = function(statusText) {
+statusCheckDB.webdb.addStatus = function(statusText,nudgeText,rxnText,duration) {
   var db = statusCheckDB.webdb.db;
   db.transaction(function(tx){
     var addedOn = new Date();
-    tx.executeSql("INSERT INTO StatusCheck(status, added_on) VALUES (?,?)",
-        [statusText, addedOn],
+    tx.executeSql("INSERT INTO StatusCheck(status, added_on, nudge, reaction, duration) VALUES (?,?,?,?,?)",
+        [statusText, addedOn, nudgeText, rxnText, duration],
         statusCheckDB.webdb.onSuccess,
         statusCheckDB.webdb.onError);
    });
@@ -77,7 +77,8 @@ initDB();
 chrome.runtime.onMessage.addListener(function(request, sender, callback) {
     if (request.action=="db"){
         console.log("DB transaction begins");
-        statusCheckDB.webdb.addStatus(request.data);
+        console.log(request);
+        statusCheckDB.webdb.addStatus(request.data,request.nudge,request.rxn,request.dur);
         callback("DB Success");
         return true;
     }

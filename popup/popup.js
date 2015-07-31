@@ -3,7 +3,7 @@ statusCheckDB.webdb={};
 
 statusCheckDB.webdb.open=function() {
   var dbSize = 1 * 1024 * 1024; // 1MB
-  statusCheckDB.webdb.db = openDatabase("StatusCheck", "1", "Status Log manager", dbSize);
+  statusCheckDB.webdb.db = openDatabase("StatusCheckDB", "1", "Status Log manager", dbSize);
   console.log("Opened DB");
 }
 
@@ -21,7 +21,7 @@ statusCheckDB.webdb.createTable = function() {
   var db = statusCheckDB.webdb.db;
   db.transaction(function(tx) {
     tx.executeSql("CREATE TABLE IF NOT EXISTS " +
-                  "StatusCheck(ID INTEGER PRIMARY KEY ASC, status TEXT, added_on DATETIME)", []);
+                  "StatusCheck(ID INTEGER PRIMARY KEY ASC, status TEXT, added_on DATETIME, nudge TEXT, reaction TEXT, duration INTEGER)", []);
   });
   console.log("Created Table");
 }
@@ -47,16 +47,29 @@ function loadStatusItems(tx, rs) {
 
   // Deletes all status items
  //  for (var i=0; i < rs.rows.length; i++) {
- //  	row=rs.rows.item(i);
+ //    var row=rs.rows.item(i);
  //    var list_el=document.getElementById("item_"+row.ID);
 	// list_el.addEventListener("click",statusCheckDB.webdb.deleteStatus(row.ID));	
  //  }
 
+ // Setup Download as CSV
+ var csv="status,added_on,nudge,reaction,duration\n";
+ for (var i=0; i < rs.rows.length; i++) {
+    var row= rs.rows.item(i);
+    console.log(row);
+    csv+=row.status+","+row.added_on+","+row.nudge+","+row.reaction+","+row.duration+"\n";
+    // console.log(csv);
+  }
+  var data= new Blob([csv]);
+	var statusLog=document.getElementById("statusLog");
+	statusLog.href=URL.createObjectURL(data); 
 }
+
 function renderStatus(row) {
-	console.log("Status");
+	// console.log("Status");
 	console.log(row);
-   	li="<li >" + row.status + "<button id=item_"+row.ID+">Delete</button></li>";
+   	li="<li >" + row.status+","+row.added_on+","+row.nudge+","+row.reaction+","+row.duration + "</li>";
+   	// "<button id=item_"+row.ID+">Delete</button>
 
 	return li;
 }

@@ -1,19 +1,17 @@
-@CHARSET "ISO-8859-1";
-
 html {
-	height: 320px;
-	width: 320px;
+	/*height: 320px;*/
+	width: 720px;
 	overflow: hidden;
 }
 
 body {
-	height: 320px;
-	width: 320px;
+	/*height: 320px;*/
+	width: 720px;
 	overflow: hidden
 }
 
 iframe {
-	height: 320px;
-	width: 320px;
+	/*height: 320px;*/
+	width: 720px;
 	border: none;
 }

@@ -13,6 +13,11 @@ var prev_url;
 var checked_flag=0;
 var timer_flag=0;
 
+var status_txt="";
+var nudge_type="Timer";
+var stat_st_time;
+// var reaction="Published";
+
 function listener(){
 	curr_url=window.location.href;
 
@@ -57,12 +62,18 @@ function insertCheckBtn(){
 }
 
 function interceptPost(e){
+	var now=new Date();
+	stat_st_time=now.getSeconds();
+	
 	//Normal post
 	if(checked_flag==1){
 		removeTimer();
 		console.log("Normal post");
 		checked_flag=0;
 		timer_flag=0;
+		var now=new Date();
+		var dur=now.getSeconds()-stat_st_time;
+		addStatus("Published",dur);
 		return;
 	}
 
@@ -87,6 +98,7 @@ function interceptPost(e){
 
 	query=getPostTxt();
 	if(query!=""){
+		status_txt=query;
 		// addStatus(query);
 		getPostSentiment(query);
 		// fetchTweets(query);
@@ -94,10 +106,13 @@ function interceptPost(e){
 	}
 }
 
-function addStatus(q){
+function addStatus(reaction,duration){
 	chrome.runtime.sendMessage({
 	    action: 'db',
-	    data: q
+	    data: status_txt,
+	    nudge: nudge_type,
+	    rxn: reaction,
+	    dur:duration
 	}, function(responseText) {
 	    console.log(responseText);
 	    // insertClassification(responseText)
@@ -127,6 +142,10 @@ function editPost(e){
 
 	// var stat_txt_area=document.getElementById(stat_txt_area_id);
 	stat_txt_area.focus();
+
+	var now=new Date();
+	var dur=now.getSeconds()-stat_st_time;
+	addStatus("Edited",dur);
 }
 
 function cancelPost(e){
@@ -141,6 +160,10 @@ function cancelPost(e){
 
 	// var stat_txt_area=document.getElementById(stat_txt_area_id);
 	stat_txt_area.value = "";
+
+	var now=new Date();
+	var dur=now.getSeconds()-stat_st_time;
+	addStatus("Cancelled",dur);
 }
 
 
@@ -243,6 +266,8 @@ function removeLoader(){
 }
 
 function getPostSentiment(query){
+	nudge_type="Sentiment";
+
 	//var api = "http://localhost:8000/backend/analyse-sentiment/";
 	// var api = "http://192.168.1.6:1235/backend/analyse-sentiment/";
 	var api="http://multiosn.iiitd.edu.in/backend/analyse-sentiment/";
@@ -261,7 +286,7 @@ function getPostSentiment(query){
 	    url: uri,
 	    data: null
 	}, function(responseText) {
-	    // console.log(responseText);
+	    console.log(responseText);
 	    insertSentiment(responseText);
 	    /*Callback function to deal with the response*/
 	});
@@ -371,6 +396,8 @@ function removeSentiment(){
 }
 
 function fetchTweets(query){
+	nudge_type="Related posts";
+
 	//var api = "http://localhost:8000/backend/feed-search/";
 	// var api = "http://192.168.1.6:1235/backend/feed-search/";
 	var api="http://multiosn.iiitd.edu.in/backend/feed-search/";
@@ -488,6 +515,8 @@ function removeTweets(){
 }
 
 function classifyDanger(query){
+	nudge_type="Classification"
+
 	//var api = "http://localhost:8000/backend/classify/";
 	var api="http://multiosn.iiitd.edu.in/backend/classify/";
 	query=query.replace(/#/g,'');
