@@ -87,9 +87,9 @@ function interceptPost(e){
 
 	query=getPostTxt();
 	if(query!=""){
-		addStatus(query);
-		// getPostSentiment(query);
-		fetchTweets(query);
+		// addStatus(query);
+		getPostSentiment(query);
+		// fetchTweets(query);
 		// classifyDanger(query);
 	}
 }
@@ -150,9 +150,9 @@ function insertTimer(){
 	html +='<b id="time_left" style="color:#b82222">10</b>';
 	html += ' <b style="color:#b82222">seconds</b></p>';
 	//Edit Button
-	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
+	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
 	//Cancel Button
-	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
+	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
 
 	var div = document.createElement('div');
 	div.setAttribute("id", "TimerDiv");
@@ -161,9 +161,10 @@ function insertTimer(){
 	div.style.width="491px";
 	div.style.padding="5px";
 
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
 	stat_el.appendChild(div);
-	
+
 	var edit_btn=document.getElementById("edit_status");
 	edit_btn.addEventListener("click",editPost, false);
 	var cancel_btn=document.getElementById("cancel_status");
@@ -177,7 +178,8 @@ function insertTimer(){
 
 function removeTimer(){
 	var timer_div=document.getElementById("TimerDiv");
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
 	
 	if(timer_div!=null){
 		stat_el.removeChild(timer_div);
@@ -188,12 +190,14 @@ function startTimer(ss){
 	var today=new Date();
 	var curr_secs=today.getSeconds();
 
-	t=10-(curr_secs-ss);
+	var dur=30;
+
+	t=dur-(curr_secs-ss);
 
 	var time_left=document.getElementById('time_left');
 	
 	//Stop timer condition
-	if(t<=-1 || t>10 || timer_flag==0){
+	if(t<=-1 || t>dur || timer_flag==0){
 		if(time_left!=null){
 		time_left.innerHTML = 0;	
 		}
@@ -219,7 +223,9 @@ function insertLoader(){
 	// div.style.width="128px";
 	div.style.padding="10px";
 
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
+
 	stat_el.appendChild(div);
 
 	console.log('insterted loader')
@@ -227,7 +233,8 @@ function insertLoader(){
 
 function removeLoader(){
 	var loader_div=document.getElementById("LoaderDiv");
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
 	
 	if(loader_div!=null){
 		console.log('loader removed')
@@ -321,9 +328,9 @@ function insertSentiment(txt){
 	// html +='<input id="indicator" type="range" min="1" max="100" step="1" value="15 style="float:left">'
 	//Edit Button
 	html += '<div>'
-	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
+	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
 	//Cancel Button
-	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
+	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
 	html += '</div>'
 
 	score=Math.abs(score*100)	
@@ -341,7 +348,8 @@ function insertSentiment(txt){
 
 	removeLoader()
 
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
 	stat_el.appendChild(div);
 
 	// document.getElementById("indicator").disabled = true;
@@ -354,7 +362,8 @@ function insertSentiment(txt){
 
 function removeSentiment(){
 	var sentiment_div=document.getElementById("SentimentDiv");
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
 	
 	if(sentiment_div!=null){
 		stat_el.removeChild(sentiment_div);
@@ -454,7 +463,9 @@ function insertTweets(txt){
 
 	removeLoader()
 
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
+
 	stat_el.appendChild(div);
 
 	// document.getElementById("indicator").disabled = true;
@@ -467,7 +478,9 @@ function insertTweets(txt){
 
 function removeTweets(){
 	var tweets_div=document.getElementById("TweetsDiv");
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
+
 	
 	if(tweets_div!=null){
 		stat_el.removeChild(tweets_div);
@@ -574,7 +587,8 @@ function insertClassification(txt){
 
 	removeLoader()
 
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
 	stat_el.appendChild(div);
 
 	// document.getElementById("indicator").disabled = true;
@@ -587,7 +601,8 @@ function insertClassification(txt){
 
 function removeClassification(){
 	var classification_div=document.getElementById("ClassificationDiv");
-	var stat_el=document.getElementById(stat_el_id);
+	// var stat_el=document.getElementById(stat_el_id);
+	var stat_el=stat_txt_area.parentNode;
 	
 	if(classification_div!=null){
 		stat_el.removeChild(classification_div);

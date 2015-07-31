@@ -45,6 +45,7 @@ function loadStatusItems(tx, rs) {
 
   statusItems.innerHTML = rowOutput;
 
+  // Deletes all status items
  //  for (var i=0; i < rs.rows.length; i++) {
  //  	row=rs.rows.item(i);
  //    var list_el=document.getElementById("item_"+row.ID);
