@@ -68,7 +68,7 @@ function loadStatusItems(tx, rs) {
 function renderStatus(row) {
 	// console.log("Status");
 	console.log(row);
-   	li="<li >" + row.status+","+row.added_on+","+row.nudge+","+row.reaction+","+row.duration + "</li>";
+   	li="<tr>" +"<td>"+ row.status+"</td><td>"+row.added_on+"</td><td>"+row.nudge+"</td><td>"+row.reaction+"</td><td>"+row.duration + "</td></tr>";
    	// "<button id=item_"+row.ID+">Delete</button>
 
 	return li;
