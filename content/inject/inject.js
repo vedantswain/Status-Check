@@ -100,9 +100,9 @@ function interceptPost(e){
 	if(query!=""){
 		status_txt=query;
 		// addStatus(query);
-		getPostSentiment(query);
+		// getPostSentiment(query);
 		// fetchTweets(query);
-		// classifyDanger(query);
+		classifyDanger(query);
 	}
 }
 
@@ -475,9 +475,9 @@ function insertTweets(txt){
 	
 	//Edit Button
 	html += '<div>'
-	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
+	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
 	//Cancel Button
-	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
+	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
 	html += '</div>'
 
 	var div = document.createElement('div');
@@ -601,9 +601,9 @@ function insertClassification(txt){
 	
 	//Edit Button
 	html += '<div>'
-	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
+	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
 	//Cancel Button
-	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;float:right;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
+	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
 	html += '</div>'
 
 	var div = document.createElement('div');
