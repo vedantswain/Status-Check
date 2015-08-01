@@ -62,9 +62,6 @@ function insertCheckBtn(){
 }
 
 function interceptPost(e){
-	var now=new Date();
-	stat_st_time=now.getSeconds();
-	
 	//Normal post
 	if(checked_flag==1){
 		removeTimer();
@@ -76,6 +73,9 @@ function interceptPost(e){
 		addStatus("Published",dur);
 		return;
 	}
+
+	var now=new Date();
+	stat_st_time=now.getSeconds();
 
 	//Intercepted check
 	e.preventDefault();
@@ -100,13 +100,16 @@ function interceptPost(e){
 	if(query!=""){
 		status_txt=query;
 		// addStatus(query);
-		getPostSentiment(query);
-		// fetchTweets(query);
+		// getPostSentiment(query);
+		fetchTweets(query);
 		// classifyDanger(query);
 	}
 }
 
 function addStatus(reaction,duration){
+	if(duration<0){
+		duration=duration*-1;
+	}
 	chrome.runtime.sendMessage({
 	    action: 'db',
 	    data: status_txt,
@@ -122,10 +125,15 @@ function addStatus(reaction,duration){
 
 function getPostTxt(){
 	// var stat_txt_area=document.getElementById(stat_txt_area_id);
-	var val = stat_txt_area.value;
-    if (val != "") {
-    	console.log(val);
-        return val;
+	try{
+		var val = stat_txt_area.value;
+	    if (val != "") {
+	    	console.log(val);
+	        return val;
+	    }
+    }
+    catch(err){
+    	console.log(err.message);
     }
     return ""
 }
@@ -295,6 +303,9 @@ function getPostSentiment(query){
 }
 
 function insertSentiment(txt){
+	var now=new Date();
+	stat_st_time=now.getSeconds();
+
 	obj = JSON.parse(txt);
 	console.log(obj);
 	var score="";
@@ -425,6 +436,9 @@ function fetchTweets(query){
 }
 
 function insertTweets(txt){
+	var now=new Date();
+	stat_st_time=now.getSeconds();
+
 	obj = JSON.parse(txt);
 	// console.log(obj);
 	tweets = obj.tweets;
@@ -546,6 +560,9 @@ function classifyDanger(query){
 }
 
 function insertClassification(txt){
+	var now=new Date();
+	stat_st_time=now.getSeconds();
+
 	obj = JSON.parse(txt);
 	tag = obj.tag;
 	polarity = obj.polarity;

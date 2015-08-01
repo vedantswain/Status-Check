@@ -5,13 +5,23 @@ html {
 }
 
 body {
-	/*height: 320px;*/
+	height: 320px;
 	width: 720px;
-	overflow: hidden
+	overflow: scroll;
+	padding: 5px;
 }
 
 iframe {
 	/*height: 320px;*/
 	width: 720px;
 	border: none;
+}
+
+table{
+	width: 700px;
+	margin-top: 20px;
+}
+
+button{
+    position:fixed;
 }

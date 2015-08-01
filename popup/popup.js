@@ -29,7 +29,7 @@ statusCheckDB.webdb.createTable = function() {
 statusCheckDB.webdb.getAllStatusItems = function(renderFunc) {
   var db = statusCheckDB.webdb.db;
   db.transaction(function(tx) {
-    tx.executeSql("SELECT * FROM StatusCheck", [], renderFunc,
+    tx.executeSql("SELECT * FROM StatusCheck ORDER BY ID DESC", [], renderFunc,
         statusCheckDB.webdb.onError);
   });
   console.log("Retrieved Statuses");
@@ -43,7 +43,8 @@ function loadStatusItems(tx, rs) {
     rowOutput += renderStatus(rs.rows.item(i));
   }
 
-  statusItems.innerHTML = rowOutput;
+  var header="<tr><td><b>Post</b></td><td><b>Time</b></td><td><b>Nudge</b></td><td><b>Response</b></td><td><b>Duration</b></td></tr>";
+  statusItems.innerHTML = header+rowOutput;
 
   // Deletes all status items
  //  for (var i=0; i < rs.rows.length; i++) {
