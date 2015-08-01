@@ -100,9 +100,9 @@ function interceptPost(e){
 	if(query!=""){
 		status_txt=query;
 		// addStatus(query);
-		// getPostSentiment(query);
+		getPostSentiment(query);
 		// fetchTweets(query);
-		classifyDanger(query);
+		// classifyDanger(query);
 	}
 }
 
@@ -326,8 +326,11 @@ function insertSentiment(txt){
 	else if(sentiment=='NEU'){
 		sentiment_tag="neutral"
 	}
-	else{
+	else if(sentiment=='N' || sentiment=='N+'){
 		sentiment_tag+="negative"
+	}
+	else{
+		sentiment_tag="neutral"
 	}
 
 	color_hex='ffd249'
@@ -338,7 +341,7 @@ function insertSentiment(txt){
 	else if(sentiment=='N' || sentiment=='N+'){
 		color_hex='#ba2600'
 	}
-	else if(sentiment=='NEU'){
+	else{
 		color_hex='#ffd249'
 	}
 
@@ -367,7 +370,7 @@ function insertSentiment(txt){
 	div.setAttribute("id", "SentimentDiv");
 	div.innerHTML = html;
 	div.style.height="61px";
-	div.style.width="491px";
+	div.style.width="auto";
 	div.style.padding="5px";
 	// div.style.border = "solid #0000FF";
 
@@ -428,7 +431,15 @@ function insertTweets(txt){
 	// console.log(tweets);
 	keywords = obj.keywords;
 	// console.log(keywords);
-	var html='<div>'
+	var html=''
+	//Edit Button
+	html += '<div>'
+	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
+	//Cancel Button
+	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
+	html += '</div>'
+
+	html+='<div>'
 	html += '<p style="color:#4f4f4f;float:left;font-size: 14px">Other posts talking about '
 	html +='<b>'+keywords+'</b> :</p>';
 
@@ -441,8 +452,8 @@ function insertTweets(txt){
 
 		html+='<li style="color:#4f4f4f;margin-bottom: 20px">'+post_txt
 
-		sentiment_tag=""
-		color_hex=""
+		sentiment_tag="neutral"
+		color_hex="#ffd249"
 
 		if(typeof(tweets[i].score_tag)==='undefined'){
 			sentiment_tag="neutral"
@@ -459,7 +470,7 @@ function insertTweets(txt){
 				sentiment_tag="neutral"
 				color_hex='#ffd249'
 			}
-			else{
+			else if(sentiment=='N' || sentiment=='N+'){
 				sentiment_tag="negative"
 				color_hex='#ba2600'
 			}
@@ -473,18 +484,13 @@ function insertTweets(txt){
 	html +='</ul>'
 	html += '</div>'
 	
-	//Edit Button
-	html += '<div>'
-	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
-	//Cancel Button
-	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
-	html += '</div>'
+	
 
 	var div = document.createElement('div');
 	div.setAttribute("id", "TweetsDiv");
 	div.innerHTML = html;
 	div.style.height="61px";
-	div.style.width="491px";
+	div.style.width="auto";
 	div.style.padding="5px";
 	// div.style.border = "solid #0000FF";
 
@@ -546,16 +552,19 @@ function insertClassification(txt){
 	keywords = obj.words;
 	// console.log(keywords);
 
-	message_header="Your post is "
+	message_header="Your post "
 	message_q1=""
 	message_q2=""
 	sentiment=""
 	message_q3=""
 	if(tag=='safe'){
 		if(polarity<0){
-			message_q1="probably "
+			message_q1="is probably "
 			message_q2=" but it has a"
 			sentiment="negative sentiment"
+		}
+		else{
+			message_q1="is "
 		}
 		if(keywords.length>0){
 			message_q3=". Be careful when you're talking about: "
@@ -564,12 +573,15 @@ function insertClassification(txt){
 	else{
 		tag='dangerous'
 		if(polarity<0){
-			message_q1="probably "
+			message_q1="might be considered "
 			message_q2=" because it has a"
 			sentiment="negative sentiment"
 		}
+		else{
+			message_q1="is "
+		}
 		if(keywords.length>0){
-			message_q3=". Be careful when you're talking about: "
+			message_q3=". Please be cautious and sensitive when you're talking about the following: "
 		}
 	}
 	
@@ -595,10 +607,7 @@ function insertClassification(txt){
 
 	message=message_header+message_q1+tag_decoration+message_q2+sentiment_decoration+message_q3+words_decoration
 
-	var html='<div>'
-	html += '<p style="color:#4f4f4f;float:left;font-size: 14px">'+message+'</p>';
-	html += '</div>'
-	
+	var html=''
 	//Edit Button
 	html += '<div>'
 	html +='<button id="edit_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #f6f7f8;color: #4e5665;border-color: #cccccc;">Edit</button>';
@@ -606,11 +615,15 @@ function insertClassification(txt){
 	html +='<button id="cancel_status" style="padding-right:16px;padding-left:16px;margin:5px;-webkit-border-radius:2px;border: 1px solid;font-weight: bold;font-size: 12px;background-color: #ffffff;color: #4e5665;border-color: #cccccc;">Cancel Post</button>';
 	html += '</div>'
 
+	html+='<div>'
+	html += '<p style="color:#4f4f4f;float:left;font-size: 14px">'+message+'</p>';
+	html += '</div>'
+
 	var div = document.createElement('div');
 	div.setAttribute("id", "ClassificationDiv");
 	div.innerHTML = html;
 	div.style.height="61px";
-	div.style.width="491px";
+	div.style.width="auto";
 	div.style.padding="5px";
 	// div.style.border = "solid #0000FF";
 
