@@ -1,10 +1,13 @@
 console.log("Injected!");
 
-var post_btn_class="_42ft _4jy0 _11b _4jy3 _4jy1 selected _51sy";
 // var stat_el_id="u_0_11";
 var stat_el_id="mentionsInput";
 // var stat_txt_area_id="u_0_19";
+
+var post_btn_class="_42ft _4jy0 _11b _4jy3 _4jy1 selected _51sy";
 var stat_txt_area_class="uiTextareaAutogrow input autofocus _34z- mentionsTextarea textInput";
+var post_title1="What's on your mind?"
+var post_title2="Write something..."
 
 var stat_txt_area;
 var post_btn;
@@ -88,11 +91,13 @@ function interceptPost(e){
 	for(var i = 0; i < txt_areas.length; i++)
 	{
    		var ta=txt_areas.item(i);
-   		if(ta.getAttribute("title")=="What's on your mind?"){
+   		if(ta.getAttribute("title")==post_title1 || ta.getAttribute("title")==post_title2){
    			stat_txt_area=ta;
    			break;
    		}
 	}
+
+	console.log(stat_txt_area.parentNode);
 
 	// insertTimer();
 
@@ -101,8 +106,8 @@ function interceptPost(e){
 		status_txt=query;
 		// addStatus(query);
 		// getPostSentiment(query);
-		fetchTweets(query);
-		// classifyDanger(query);
+		// fetchTweets(query);
+		classifyDanger(query);
 	}
 }
 
@@ -224,6 +229,8 @@ function startTimer(ss){
 	var dur=30;
 
 	t=dur-(curr_secs-ss);
+
+	// console.log(t)
 
 	var time_left=document.getElementById('time_left');
 	
